@@ -1,1 +1,1 @@
-EXTRA_DIST = build/html
+EXTRA_DIST = html
