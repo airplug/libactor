@@ -6,3 +6,4 @@ config.log
 config.status
 Makefile
 libtool
+autom4te*

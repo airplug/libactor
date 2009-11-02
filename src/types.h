@@ -123,16 +123,4 @@ struct actor_state_struct {
 	char trap_exit;
 };
 
-/*
-**
-** Mailbox Types
-**
-*/
-
-
-struct actor_mailbox_struct {
-	
-};
-typedef struct actor_mailbox_struct actor_mailbox_t;
-
 #endif

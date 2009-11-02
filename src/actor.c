@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #if defined(WIN32)
-#	include <sys/time.h>
 #	define PTHREAD_HANDLE(_t) _t.p
 #else
 #	include <sys/resource.h>
@@ -172,10 +172,7 @@ void *spawn_actor_fun(void *arg) {
 actor_id spawn_actor(ACTOR_FUNCTION_PTR(func), void *args) {
 	actor_state_t *state;
 	actor_id aid;
-	pthread_t t;
 	struct actor_spawn_info *si;
-	pthread_attr_t attr;
-
 	
 	assert(func != NULL);
 	
@@ -338,7 +335,6 @@ actor_msg_t *actor_receive() {
 actor_msg_t *actor_receive_timeout(long timeout) {
 	actor_state_t *st = NULL;
 	actor_msg_t *msg = NULL;
-	actor_id aid = -1;
 	pthread_t thread = pthread_self();
 	struct timespec ts;
 	struct timeval tp;
@@ -476,9 +472,11 @@ void *_amalloc_thread(size_t size, pthread_t thread) {
 
 void *amalloc(size_t size) {
 	pthread_t thread = pthread_self();
+	void *block;
 	ACCESS_ACTORS_BEGIN
-	_amalloc_thread(size, thread);
+	block = _amalloc_thread(size, thread);
 	ACCESS_ACTORS_END
+	return block;
 }
 
 LIST_FILTER_FUNC(find_memory, info, block) {
@@ -561,7 +559,6 @@ LIST_FILTER_FUNC(find_memory_actor, owner, arg) {
 }
 
 void _actor_release_memory(actor_state_t *state) {
-	void *block = NULL;
 	struct actor_alloc *info, *tmp;
 	#ifdef DEBUG_MEMORY
 		int count = list_count(&state->allocs);

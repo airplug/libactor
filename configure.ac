@@ -11,5 +11,5 @@ AC_TYPE_SIZE_T
 AC_CHECK_LIB([pthread], [pthread_create],,AC_ERROR(pthread library not found))
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile examples/Makefile doc/Makefile])
-
+CFLAGS="-Wall"
 AC_OUTPUT
