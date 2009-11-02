@@ -21,7 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/resource.h>
+#if defined(WIN32)
+#	include <sys/time.h>
+#	define PTHREAD_HANDLE(_t) _t.p
+#else
+#	include <sys/resource.h>
+#	define PTHREAD_HANDLE(_t) _t
+#endif // defined(WIN32)
 
 #include "actor.h"
 #include "list.h"
@@ -203,7 +209,7 @@ actor_id spawn_actor(ACTOR_FUNCTION_PTR(func), void *args) {
 LIST_FILTER_FUNC(find_thread, item, arg) {
 	int ret = -1;
 	actor_state_t *st = (actor_state_t*)item;
-	if(st->thread == arg) ret = 0;
+	if(PTHREAD_HANDLE(st->thread) == arg) ret = 0;
 	return ret;
 }
 
@@ -233,7 +239,7 @@ actor_id _actor_find_by_thread() {
 	actor_id aid = -1;
 	pthread_t thread = pthread_self();
 	
-	if((st = list_filter(actor_list, find_thread, (void*)thread)) != NULL) aid = st->myid;
+	if((st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(thread))) != NULL) aid = st->myid;
 
 	
 	return aid;
@@ -255,7 +261,7 @@ actor_id actor_self() {
 
 actor_id _actor_trapexit_to() {
 	actor_state_t *st;
-	if((st = list_filter(actor_list, find_thread, (void*)pthread_self())) != NULL) {
+	if((st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(pthread_self()))) != NULL) {
 		if(st->trap_exit == 1) {
 			return st->myid;
 		}
@@ -266,7 +272,7 @@ actor_id _actor_trapexit_to() {
 void actor_trap_exit(int action) {
 	actor_state_t *st;
 	ACCESS_ACTORS_BEGIN
-	if((st = list_filter(actor_list, find_thread, (void*)pthread_self())) != NULL) {
+	if((st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(pthread_self()))) != NULL) {
 		st->trap_exit = action == 0 ? 0 : 1;
 	}
 	ACCESS_ACTORS_END
@@ -342,7 +348,7 @@ actor_msg_t *actor_receive_timeout(long timeout) {
 	ACCESS_ACTORS_BEGIN
 	ACTOR_THREAD_PRINT("actor_receive_msg()\n");
 	
-	st = list_filter(actor_list, find_thread, (void*)thread);	
+	st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(thread));
 	
 	
 
@@ -416,7 +422,8 @@ void _actor_send_msg(actor_id aid, long type, void *data, size_t size) {
 	actor_state_t *st = NULL;
 	actor_msg_t *msg = NULL;
 	actor_id myid = _actor_find_by_thread();
-	pthread_t thread = NULL;
+	pthread_t thread;
+	PTHREAD_HANDLE(thread) = NULL;
 	
 	if(myid == -1) return;
 
@@ -452,7 +459,7 @@ void *_amalloc_thread(size_t size, pthread_t thread) {
 	info->block = block;
 	info->refcount = 1;
 	
-	st = list_filter(actor_list, find_thread, (void*)thread);
+	st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(thread));
 	if(st != NULL) {
 		al = (struct actor_alloc*)malloc(sizeof(struct actor_alloc));
 		assert(al != NULL);
@@ -502,7 +509,7 @@ void _aretain_thread(void *block, pthread_t thread) {
 		info->refcount++;
 	}
 
-	st = list_filter(actor_list, find_thread, (void*)thread);
+	st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(thread));
 	if(st != NULL) {
 		al = (struct actor_alloc*)malloc(sizeof(struct actor_alloc));
 		assert(al != NULL);
@@ -539,7 +546,7 @@ void _arelease(void *block, pthread_t thread) {
 	
 	pthread_mutex_unlock(&actors_alloc);
 	
-	st = list_filter(actor_list, find_thread, (void*)thread);
+	st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(thread));
 	if(st != NULL) {
 		if((al = list_filter(&st->allocs, find_actor_block, block)) != NULL) {
 			list_remove(&st->allocs, al);

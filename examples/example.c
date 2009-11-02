@@ -20,9 +20,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include <stdio.h>
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#if defined(WIN32)
+#	include <windows.h>
+void sleep(unsigned int seconds)
+{
+	Sleep(seconds*1000);
+}
+#else
+#	include <sys/socket.h>
+#	include <netinet/in.h>
+#	include <arpa/inet.h>
+#endif // defined(WIN32)
 
 #include <libactor/actor.h>
 
@@ -71,8 +79,8 @@ void *echo_client(void *args) {
 		remote = (struct sockaddr_in*)msg->data;
 		printf("Echo client connected: %s\n", inet_ntoa(remote->sin_addr));
 		
-		while((ret = recv(sock, &buf, 32, 0)) > 0) {
-			if(send(sock, &buf, ret, 0) == -1) break;
+		while((ret = recv(sock, buf, 32, 0)) > 0) {
+			if(send(sock, buf, ret, 0) == -1) break;
 		}
 		printf("Echo client disconnected: %s\n", inet_ntoa(remote->sin_addr));
 	}
@@ -94,7 +102,7 @@ void *echo_server(void *args) {
 	
 	/* Set SO_REUSEADDR */
 	sockoption = 1;
-	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption));
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char*)&sockoption, sizeof(sockoption));
 	
 	if(bind(sockfd, (struct sockaddr*)&local, sizeof(struct sockaddr_in)) == -1) {
 		perror("bind");

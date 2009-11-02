@@ -24,11 +24,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include <libactor/actor.h>
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
+#if defined(WIN32)
+#	include <windows.h>
+#else
+#	include <sys/types.h>
+#	include <sys/socket.h>
+#	include <netinet/in.h>
+#	include <unistd.h>
+#	include <arpa/inet.h>
+#endif // defined(WIN32)
 
 #define BUFFER_SIZE 512
 
@@ -76,7 +80,7 @@ void *http_listener(void *arg) {
 	
 	/* Set SO_REUSEADDR */
 	sockoption = 1;
-	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption));
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char*)&sockoption, sizeof(sockoption));
 	
 	
 	if(bind(sockfd, (struct sockaddr*)&local, sizeof(struct sockaddr_in)) == -1) { perror("bind"); return 0; }
