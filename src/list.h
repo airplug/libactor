@@ -23,7 +23,6 @@
 #include <stdlib.h>
 
 typedef int (*list_filter_func_ptr_t)(void *, void *);
-#define LIST_FILTER_FUNC(name, item, arg) int (name)(void *item, void *arg)
 
 struct list_item_struct;
 typedef struct list_item_struct list_item_t;

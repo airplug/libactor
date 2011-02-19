@@ -203,14 +203,17 @@ actor_id spawn_actor(actor_function_ptr_t func, void *args) {
                                  helper functions
 ------------------------------------------------------------------------------*/
 
-LIST_FILTER_FUNC(find_thread, item, arg) {
+
+/* satisfies list_filter_func_ptr_t */
+int find_thread(void * item, void * arg) {
   int ret = -1;
   actor_state_t *st = (actor_state_t*)item;
   if (PTHREAD_HANDLE(st->thread) == arg) ret = 0;
   return ret;
 }
 
-LIST_FILTER_FUNC(find_by_id, item, arg) {
+/* satisfies list_filter_func_ptr_t */
+int find_by_id(void * item, void * arg) {
   int ret = -1;
   actor_state_t *st = ((actor_state_t*)item);
   if (st->myid == (actor_id)arg) ret = 0;
@@ -479,12 +482,14 @@ void *_amalloc_thread(size_t size, pthread_t thread) {
 }
 
 
-LIST_FILTER_FUNC(find_memory, info, block) {
+/* satisfies list_filter_func_ptr_t */
+int find_memory(void * info, void * block) {
   if (((alloc_info_t*)info)->block == block) return 0;
   return -1;
 }
 
-LIST_FILTER_FUNC(find_actor_block, info, arg) {
+/* satisfies list_filter_func_ptr_t */
+int find_actor_block(void * info, void * arg) {
   return (((struct actor_alloc *) info)->block == arg) ? 0 : -1;
 }
 
@@ -526,9 +531,9 @@ void _arelease(void *block, pthread_t thread) {
   }
 }
 
-LIST_FILTER_FUNC(find_memory_actor, owner, arg) {
-  if (owner == arg) return 0;
-  return -1;
+/* satisfies list_filter_func_ptr_t */
+int find_memory_actor(void * owner, void * arg) {
+  return (owner == arg) ? 0 : -1;
 }
 
 void _actor_release_memory(actor_state_t *state) {
