@@ -1,5 +1,15 @@
-libactor - A C Actor Library
-Copyright (C) 2009 Chris Moos
+COPYING
+-------
+
+
+Copyright
+=========
+
+``libactor`` is © 2009 Chris Moos.
+
+
+GNU Public License
+==================
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
