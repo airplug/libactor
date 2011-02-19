@@ -64,8 +64,7 @@ typedef struct alloc_info_struct alloc_info_t;
 **
 */
 
-#define ACTOR_FUNCTION(name, args) void *(name)(void *args)
-#define ACTOR_FUNCTION_PTR(name) void *(*name)(void *)
+typedef void * (*actor_function_ptr_t)(void *);
 
 
 /*

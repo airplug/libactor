@@ -45,7 +45,7 @@ static list_item_t **alloc_list = &alloc_list_real;
 /* Private structs */
 struct actor_spawn_info {
   actor_state_t *state;
-  ACTOR_FUNCTION_PTR(fun);
+  actor_function_ptr_t fun;
   void *args;
 };
 
@@ -61,7 +61,6 @@ actor_msg_t *_actor_create_msg(
     actor_id dest,
     pthread_t thread);
 void *_amalloc_thread(size_t size, pthread_t thread);
-void _aretain_thread(void *block, pthread_t thread);
 void _arelease(void *block, pthread_t thread);
 void _actor_send_msg(actor_id aid, long type, void *data, size_t size);
 void _actor_release_memory(actor_state_t *state);
@@ -73,7 +72,6 @@ actor_id _actor_find_by_thread();
 void actor_init_state(actor_state_t **state);
 void actor_destroy_state(actor_state_t *state);
 void actor_release_memory(actor_state_t *state);
-void aretain_thread(void *block, pthread_t thread);
 
 
 /*------------------------------------------------------------------------------
@@ -173,7 +171,7 @@ void *spawn_actor_fun(void *arg) {
   pthread_exit((void*)NULL);
 }
 
-actor_id spawn_actor(ACTOR_FUNCTION_PTR(func), void *args) {
+actor_id spawn_actor(actor_function_ptr_t func, void *args) {
   actor_state_t *state;
   actor_id aid;
   struct actor_spawn_info *si;

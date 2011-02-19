@@ -31,7 +31,7 @@ enum {
 void actor_init();
 
 /* Spawns an actor, returns the ID. */
-actor_id spawn_actor(ACTOR_FUNCTION_PTR(func), void *args);
+actor_id spawn_actor(actor_function_ptr_t func, void *args);
 
 /* Destroy all actors */
 void actor_destroy_all();
