@@ -105,8 +105,6 @@ struct actor_state_struct {
   pthread_cond_t msg_cond;
   pthread_mutex_t msg_mutex;
   list_item_t *allocs;
-  actor_id trap_exit_to;
-  char trap_exit;
 };
 
 enum {
@@ -142,9 +140,6 @@ void actor_reply_msg(actor_msg_t *a, long type, void *data, size_t size);
 /* Receive next message */
 actor_msg_t *actor_receive();
 actor_msg_t *actor_receive_timeout(long timeout);
-
-/* Trap exit */
-void actor_trap_exit(int action);
 
 /* Get my id */
 actor_id actor_self();

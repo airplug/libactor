@@ -155,9 +155,6 @@ void *spawn_actor_fun(void *arg) {
 
   ACCESS_ACTORS_BEGIN;
 
-  if (si->state->trap_exit_to != 0)
-    _actor_send_msg(si->state->trap_exit_to, ACTOR_MSG_EXITED, NULL, 0);
-
   _actor_release_memory(si->state);
   _actor_destroy_state(si->state);
   free(si);
@@ -258,32 +255,6 @@ actor_id actor_self() {
                                 state management
 ------------------------------------------------------------------------------*/
 
-actor_id _actor_trapexit_to() {
-  actor_state_t *st;
-  st = list_filter(
-      actor_list,
-      find_thread,
-      (void *) PTHREAD_HANDLE(pthread_self()));
-
-  if (st != NULL && st->trap_exit == 1) return st->myid;
-
-  return 0;
-}
-
-void actor_trap_exit(int action) {
-  actor_state_t *st;
-
-  ACCESS_ACTORS_BEGIN;
-
-  st = list_filter(
-      actor_list,
-      find_thread,
-      (void *) PTHREAD_HANDLE(pthread_self()));
-
-  if (st != NULL) st->trap_exit = action == 0 ? 0 : 1;
-
-  ACCESS_ACTORS_END;
-}
 
 void _actor_init_state(actor_state_t **state) {
   actor_state_t *t;
@@ -291,8 +262,6 @@ void _actor_init_state(actor_state_t **state) {
 
 
   t = (actor_state_t*)malloc(sizeof(actor_state_t));
-  t->trap_exit_to = _actor_trapexit_to();
-  t->trap_exit = 0;
   t->myid = get_unique_actor_id();
   pthread_cond_init(&t->msg_cond, NULL);
   pthread_mutex_init(&t->msg_mutex, NULL);
