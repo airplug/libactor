@@ -25,12 +25,10 @@
 #define ANON_LIST_FILTER_FUNC(name) int (*name)(void *, void *)
 #define LIST_FILTER_FUNC(name, item, arg) int (name)(void *item, void *arg)
 
-struct list_item_struct;
-typedef struct list_item_struct list_item_t;
 
-struct list_item_struct {
+typedef struct list_item_t {
   list_item_t *next;
-};
+} list_item_t;
 
 
 void list_init(list_item_t **start);
