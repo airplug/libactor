@@ -22,7 +22,7 @@
 
 #include <stdlib.h>
 
-#define ANON_LIST_FILTER_FUNC(name) int (*name)(void *, void *)
+typedef int (*list_filter_func_ptr_t)(void *, void *);
 #define LIST_FILTER_FUNC(name, item, arg) int (name)(void *item, void *arg)
 
 struct list_item_struct;
@@ -41,6 +41,6 @@ void *list_pop(list_item_t **start);
 
 size_t list_count(list_item_t **start);
 
-void *list_filter(list_item_t **start, ANON_LIST_FILTER_FUNC(func), void *arg);
+void *list_filter(list_item_t **start, list_filter_func_ptr_t func, void *arg);
 
 #endif  // SRC_LIST_H_

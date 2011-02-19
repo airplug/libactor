@@ -52,7 +52,7 @@ void *list_pop(list_item_t **start) {
   return temp;
 }
 
-void *list_filter(list_item_t **start, ANON_LIST_FILTER_FUNC(func), void *arg) {
+void *list_filter(list_item_t **start, list_filter_func_ptr_t func, void *arg) {
   list_item_t *temp;
   if (*start == NULL) return NULL;
   for (temp = *start; temp != NULL; temp = temp->next) {
