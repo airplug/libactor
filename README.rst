@@ -76,7 +76,7 @@ Managing your Actors
 """"""""""""""""""""
 
 To spawn a new Actor,
-use the ``spawn_actor`` function.
+use ``spawn_actor(function, args)``.
 To spawn the ``foo`` Actor
 with a ``NULL`` pointer as an argument::
 
@@ -84,22 +84,18 @@ with a ``NULL`` pointer as an argument::
       actor_id foo_id = spawn_actor(foo, NULL);
     }
 
-Notice the return type of ``spawn_actor``:
+Notice the return type of ``spawn_actor()``:
 an ``actor_id``.
 This uniquely identifies the spawned Actor,
 and allows communication between Actors to identify the sender and receiver.
 
 After a ``foo`` Actor is spawned,
-it can obtain its ID using ``actor_self()``:
+it can obtain its ID using ``actor_self()``::
 
     ACTOR_FUNCTION(foo, args) {
       actor_id my_id = actor_self();
     }
 
-  
-.. cfunction:: void actor_trap_exit(int action)
-
-  By setting *action* to 1, trap exit is enabled. This means that when you spawn an actor, when it exits, you will receive a :ctype:`ACTOR_MSG_EXITED` message. This is good if you want to monitor any actors that you have spawned.
 
 
 Data Types
