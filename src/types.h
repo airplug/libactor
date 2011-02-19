@@ -47,24 +47,9 @@
 #define ACCESS_ACTORS_BEGIN pthread_mutex_lock(&actors_mutex);
 #define ACCESS_ACTORS_END pthread_mutex_unlock(&actors_mutex);
 
-#define DECLARE_ACTOR_MAIN(fun)                 \
-  int main(int argc, char **argv) {             \
-    struct actor_main amain;                    \
-    amain.argc = argc;                          \
-    amain.argv = argv;                          \
-    actor_init();                               \
-    spawn_actor(fun, (void*)&amain);            \
-    actor_wait_finish();                        \
-    actor_destroy_all();                        \
-    exit(0);                                    \
-  }
 
 #define ACTOR_INVALID -1
 
-struct actor_main {
-  int argc;
-  char **argv;
-};
 
 struct alloc_info_struct {
   struct alloc_info_struct *next;
