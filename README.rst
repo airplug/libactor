@@ -1,16 +1,24 @@
-http://www.chrismoos.com
+libactor
+--------
 
-A C library based on the Actor model. See the doc directory for more information.
-
-Install:
-
-./configure
-make
-sudo make install
+``libactor`` is a C library based on the Actor model,
+originally written by `Chris Moos`_.
+See the doc directory for more information.
 
 
-Try out the example:
+To install::
 
-gcc -lactor -o example examples/example.c && ./example
+    ./configure
+    make
+    sudo make install
+
+
+Try out the example::
+
+    gcc -lactor -o example examples/example.c && ./example
+
 
 You may have to run ldconfig to reload the library cache.
+
+
+.. _Chris Moos: http://www.chrismoos.com/
