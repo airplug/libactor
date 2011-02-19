@@ -8,7 +8,7 @@ but one caveat is that if one actor crashes -- they all fall down.
 In a future release there will be sandboxing of each actor.
 
 
-To install:: shell
+To install::
 
     ./configure
     make
@@ -97,43 +97,26 @@ it can obtain its ID using ``actor_self()``::
     }
 
 
+Message-passing
+"""""""""""""""
 
-Data Types
-""""""""""
+Communication uses *messages*.
+All messages are of type ``actor_msg_t``,
+and are created like this::
 
-.. ctype:: actor_msg_t
+    actor_send_msg(
+      foo,       /* The Actor to send to */
+      PING_MSG,  /* The message type */
+      NULL,      /* A pointer to the message */
+      0          /* The length in bytes of the message */
+    ); 
 
-  This structure contains information about a message. The following fields are available:
+The ``type`` should be greater than 100,
+as anything below that may be used by the library.
 
-  .. cmember:: sender
-  
-    The :ctype:`actor_id` of the actor who sent the message.
-    
-  .. cmember:: data
-  
-    A :ctype:`void*` to the message data.
-    
-  .. cmember:: size
-  
-    The size of the data.
-
-
-
-
-
-
-Messaging
-"""""""""
-
-When sending a message, the *type* should be greater than 100, (anything below that may be used by the library).
-  
-.. cfunction:: void actor_send_msg(actor_id aid, long type, void *data, size_t size)
-
-  Sends a message to an actor. *type* is a user defined value. *data* is a pointer to a block of data that will be sent to the actor. 
-  
-  **Note**: The data is copied before being sent to the actor. If you are passing a structure, make sure that it doesn't contain any pointers to memory, as this can cause a crash. *data* should be a complete message, see :ref:`memory-management`.
   
   
+
 .. cfunction:: void actor_broadcast_msg(long type, void *data, size_t size)
 
   Broadcasts a message to all actors.
@@ -149,9 +132,9 @@ When sending a message, the *type* should be greater than 100, (anything below t
 .. cfunction:: actor_msg_t *actor_receive_timeout(long timeout)
 
   Same as :cfunc:`actor_receive`, but let's you specify a timeout (in milliseconds).
-  
-.. _memory-management:
 
+
+.. _memory-management:
 
 Memory Management
 """""""""""""""""
