@@ -79,16 +79,43 @@ typedef void * (*actor_function_ptr_t)(void *);
 struct actor_state_struct;
 typedef struct actor_state_struct actor_state_t;
 
+/**
+ * An integer that refers to a unique actor’s ID.
+ */
 typedef long actor_id;
 
 struct actor_message_struct;
 typedef struct actor_message_struct actor_msg_t;
 
+/**
+ * This structure contains information about a message.
+ */
 struct actor_message_struct {
   actor_msg_t *next;
-  actor_id sender, dest;
-  long type;
+
+  /**
+   * The actor_id of the actor who sent the message.
+   */
+  actor_id sender;
+
+  /**
+   * The actor_id of the actor who should receive the message.
+   */
+  actor_id dest;
+
+  /**
+   * A `void *` to the message data.
+   */
   void *data;
+
+  /**
+   * A integer that should identify the structure of the data.
+   */
+  long type;
+
+  /**
+   * The size of the data.
+   */
   size_t size;
 };
 
@@ -116,32 +143,74 @@ enum {
                                 public functions
 ------------------------------------------------------------------------------*/
 
-/* Initializes global state */
+/**
+ * Initialize global state
+ */
 void actor_init();
 
-/* Spawns an actor, returns the ID. */
+
+/**
+ * Spawn a new actor.
+ * 
+ * @param func  the function that the thread should run
+ * @param args  passed to the actor when it is spawned
+ * @return      the `actor_id`
+ */
 actor_id spawn_actor(actor_function_ptr_t func, void *args);
 
-/* Destroy all actors */
+
+/**
+ * Destroy all actors
+ */
 void actor_destroy_all();
 
-/* Waits till all actors have exited */
+
+/**
+ * Wait till all actors have exited
+ */
 void actor_wait_finish();
 
-/* Send message to an actor */
-void actor_send_msg(actor_id aid, long type, void *data, size_t size);
 
-/* Broadcast */
-void actor_broadcast_msg(long type, void *data, size_t size);
+/**
+ * Send a message to an actor.
+ * The data is copied before being sent to the actor.
+ * 
+ * @param aid   the Actor to which the message is sent
+ * @param type  a user defined value
+ * @param data  a pointer to a block of data that will be sent to the Actor
+ * @param size  the size of the data pointed at by `data`
+ */
+void actor_send_msg(actor_id aid, long type, void * data, size_t size);
 
-/* Reply */
-void actor_reply_msg(actor_msg_t *a, long type, void *data, size_t size);
 
-/* Receive next message */
-actor_msg_t *actor_receive();
-actor_msg_t *actor_receive_timeout(long timeout);
+/**
+ * Broadcast a message to all actors.
+ */
+void actor_broadcast_msg(long type, void * data, size_t size);
 
-/* Get my id */
+
+/**
+ * Reply to a received message.
+ */
+void actor_reply_msg(actor_msg_t *a, long type, void * data, size_t size);
+
+
+/**
+ * Receive a message from the actor’s mailbox.
+ */
+actor_msg_t * actor_receive();
+
+/**
+ * Same as actor_receive(), but allows a timeout (in milliseconds).
+ */
+actor_msg_t * actor_receive_timeout(long timeout);
+
+
+/**
+ * Gets the actor_id of the executing Actor.
+ *
+ * @return  the actor_id of the executing Actor.
+ */
 actor_id actor_self();
 
 /* Memory management */
