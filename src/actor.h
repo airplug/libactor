@@ -20,12 +20,103 @@
 #ifndef SRC_ACTOR_H_
 #define SRC_ACTOR_H_
 
-#include "./types.h"
+
+/*------------------------------------------------------------------------------
+                                    includes
+------------------------------------------------------------------------------*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <assert.h>
+
+#include "./list.h"
+
+
+/*------------------------------------------------------------------------------
+                               preprocessor definitions
+------------------------------------------------------------------------------*/
+
+#ifdef ACTOR_THREAD_PRINT_DEBUG
+#define ACTOR_THREAD_PRINT(msg) printf("[actor thread]: %s\n", msg);
+#else
+#define ACTOR_THREAD_PRINT(msg)
+#endif
+
+#define ACCESS_ACTORS_BEGIN pthread_mutex_lock(&actors_mutex)
+#define ACCESS_ACTORS_END pthread_mutex_unlock(&actors_mutex)
+
+#define ACTOR_INVALID -1
+
+
+/*------------------------------------------------------------------------------
+                                    types
+------------------------------------------------------------------------------*/
+
+struct alloc_info_struct {
+  struct alloc_info_struct *next;
+  void *block;
+  unsigned int refcount;
+};
+typedef struct alloc_info_struct alloc_info_t;
+
+/*
+**
+** Actor Function
+**
+*/
+
+typedef void * (*actor_function_ptr_t)(void *);
+
+
+/*
+**
+** Actor Types
+**
+*/
+
+struct actor_state_struct;
+typedef struct actor_state_struct actor_state_t;
+
+typedef long actor_id;
+
+struct actor_message_struct;
+typedef struct actor_message_struct actor_msg_t;
+
+struct actor_message_struct {
+  actor_msg_t *next;
+  actor_id sender, dest;
+  long type;
+  void *data;
+  size_t size;
+};
+
+struct actor_alloc {
+  struct actor_alloc *next;
+  void *block;
+};
+
+struct actor_state_struct {
+  actor_state_t *next;
+  actor_id myid;
+  actor_msg_t *messages;
+  pthread_t thread;
+  pthread_cond_t msg_cond;
+  pthread_mutex_t msg_mutex;
+  list_item_t *allocs;
+  actor_id trap_exit_to;
+  char trap_exit;
+};
 
 enum {
   ACTOR_MSG_EXITED = 1
 };
 
+
+/*------------------------------------------------------------------------------
+                                public functions
+------------------------------------------------------------------------------*/
 
 /* Initializes global state */
 void actor_init();
