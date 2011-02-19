@@ -31,25 +31,36 @@ include ``<libactor/actor.h>`` in your project
 and compile with the flag ``-lactor``.
 
 
-Declaring your actors
+Declaring your Actors
 """""""""""""""""""""
 
-Actors are functions.
-To define a new actor,
-use the ``ACTOR_FUNCTION(name, args)`` macro, where
-``name`` is the name of the function,
-and ``args`` is any arguments passed to the actor as a ``void*``.
-Here's an example::
+Actors are just threads,
+and as in ``pthreads``,
+a thread is an executing function.
+To define a new actor you can just define a new function
+that takes a single ``void*`` as an argument
+and returns a single ``void*``::
 
-    ACTOR_FUNCTION(ping_func, args) {
+    void * foo(void * args) {
+      /* your Actor's logic goes here */
+    }
+ 
+
+For clarity, you can use the macro ``ACTOR_FUNCTION(name, args)``, where
+``name`` is the name of the function,
+and ``args`` is any arguments passed to the actor as a ``void*``,
+like so::
+
+    ACTOR_FUNCTION(foo, args) {
       /* your Actor's logic goes here */
     }
 
 ``libactor`` distinguishes a *main* actor.
-This actor will be executed when the application starts.
+This actor will be executed when the application starts,
+and passed a pointer to a struct containing the program arguments.
 In your main file, declare your main actor like so::
 
-    ACTOR_FUNCTION(main_func, args) {
+    ACTOR_FUNCTION(main_actor, args) {
       struct actor_main * main = (struct actor_main *) args;
  
       /* Accessing the arguments passed to the application */
@@ -58,18 +69,41 @@ In your main file, declare your main actor like so::
         printf("Argument: %s\n", main->argv[x]);
     }
  
-    DECLARE_ACTOR_MAIN(main_func)
+    DECLARE_ACTOR_MAIN(main_actor)
+ 
 
+Managing your Actors
+""""""""""""""""""""
+
+To spawn a new Actor,
+use the ``spawn_actor`` function.
+To spawn the ``foo`` Actor
+with a ``NULL`` pointer as an argument::
+
+    ACTOR_FUNCTION(main_actor, args) {
+      actor_id foo_id = spawn_actor(foo, NULL);
+    }
+
+Notice the return type of ``spawn_actor``:
+an ``actor_id``.
+This uniquely identifies the spawned Actor,
+and allows communication between Actors to identify the sender and receiver.
+
+After a ``foo`` Actor is spawned,
+it can obtain its ID using ``actor_self()``:
+
+    ACTOR_FUNCTION(foo, args) {
+      actor_id my_id = actor_self();
+    }
 
   
+.. cfunction:: void actor_trap_exit(int action)
+
+  By setting *action* to 1, trap exit is enabled. This means that when you spawn an actor, when it exits, you will receive a :ctype:`ACTOR_MSG_EXITED` message. This is good if you want to monitor any actors that you have spawned.
 
 
 Data Types
 """"""""""
-
-.. ctype:: typedef long actor_id
-
-  An integer that refers to a unique actor's ID.
 
 .. ctype:: actor_msg_t
 
@@ -89,20 +123,7 @@ Data Types
 
 
 
-Actor Management 
-""""""""""""""""
 
-.. cfunction:: actor_id spawn_actor(ACTOR_FUNCTION_PTR(func), void *args)
-
-  This functions spawns a new actor, the first argument should be the name of an actor created with :cmacro:`ACTOR_FUNCTION`. The second argument is passed to the actor when it is spawned. The *actor_id* is returned to the caller.
-
-.. cfunction:: actor_id actor_self()
-
-  Returns the current actor's id.
-  
-.. cfunction:: void actor_trap_exit(int action)
-
-  By setting *action* to 1, trap exit is enabled. This means that when you spawn an actor, when it exits, you will receive a :ctype:`ACTOR_MSG_EXITED` message. This is good if you want to monitor any actors that you have spawned.
 
 
 Messaging
@@ -246,4 +267,5 @@ main.c::
 
 
 .. _Actor model: http://en.wikipedia.org/wiki/Actor_model
+.. _pthreads:    http://en.wikipedia.org/wiki/POSIX_Threads
 .. _Chris Moos:  http://www.chrismoos.com/
