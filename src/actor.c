@@ -76,11 +76,9 @@ void actor_release_memory(actor_state_t *state);
 void aretain_thread(void *block, pthread_t thread);
 
 
-/*
-**
-** Library Initilization and Management
-**
-*/
+/*------------------------------------------------------------------------------
+                           initialization and management
+------------------------------------------------------------------------------*/
 
 void actor_init() {
   assert(actor_list != NULL);
@@ -144,11 +142,9 @@ void actor_destroy_all() {
 }
 
 
-/*
-**
-**  Create/spawn actor
-**
-*/
+/*------------------------------------------------------------------------------
+                                   spawn_actor
+------------------------------------------------------------------------------*/
 
 void *spawn_actor_fun(void *arg) {
   struct actor_spawn_info *si = (struct actor_spawn_info*)arg;
@@ -205,11 +201,10 @@ actor_id spawn_actor(ACTOR_FUNCTION_PTR(func), void *args) {
       return aid;
 }
 
-/*
-**
-** Helper functions
-**
-*/
+
+/*------------------------------------------------------------------------------
+                                 helper functions
+------------------------------------------------------------------------------*/
 
 LIST_FILTER_FUNC(find_thread, item, arg) {
   int ret = -1;
@@ -258,11 +253,10 @@ actor_id actor_self() {
       return aid;
 }
 
-/*
-**
-** Actor State Management
-**
-*/
+
+/*------------------------------------------------------------------------------
+                                state management
+------------------------------------------------------------------------------*/
 
 actor_id _actor_trapexit_to() {
   actor_state_t *st;
@@ -320,11 +314,10 @@ void _actor_destroy_state(actor_state_t *state) {
   free(state);
 }
 
-/*
-**
-** Actor Messaging
-**
-*/
+
+/*------------------------------------------------------------------------------
+                                    messaging
+------------------------------------------------------------------------------*/
 
 actor_msg_t *_actor_create_msg(
     long type,
@@ -453,11 +446,10 @@ void _actor_send_msg(actor_id aid, long type, void *data, size_t size) {
   }
 }
 
-/*
-**
-**  Memory Manager
-**
-*/
+
+/*------------------------------------------------------------------------------
+                                memory management
+------------------------------------------------------------------------------*/
 
 void *_amalloc_thread(size_t size, pthread_t thread) {
   alloc_info_t *info;
