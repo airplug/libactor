@@ -147,13 +147,13 @@ void actor_destroy_all() {
 void *spawn_actor_fun(void *arg) {
   struct actor_spawn_info *si = (struct actor_spawn_info*)arg;
 
-  ACCESS_ACTORS_BEGIN
-      si->state->thread = pthread_self();
-  ACCESS_ACTORS_END
+  ACCESS_ACTORS_BEGIN;
+  si->state->thread = pthread_self();
+  ACCESS_ACTORS_END;
 
   (si->fun)(si->args);
 
-  ACCESS_ACTORS_BEGIN
+  ACCESS_ACTORS_BEGIN;
 
   if (si->state->trap_exit_to != 0)
     _actor_send_msg(si->state->trap_exit_to, ACTOR_MSG_EXITED, NULL, 0);
@@ -163,10 +163,9 @@ void *spawn_actor_fun(void *arg) {
   free(si);
 
   pthread_cond_signal(&actors_cond);
-  ACCESS_ACTORS_END
+  ACCESS_ACTORS_END;
 
-
-      pthread_detach(pthread_self());
+  pthread_detach(pthread_self());
 
   pthread_exit((void*)NULL);
 }
@@ -178,9 +177,9 @@ actor_id spawn_actor(actor_function_ptr_t func, void *args) {
 
   assert(func != NULL);
 
-  ACCESS_ACTORS_BEGIN
+  ACCESS_ACTORS_BEGIN;
 
-      _actor_init_state(&state);
+  _actor_init_state(&state);
 
   assert(state != NULL);
 
@@ -194,9 +193,9 @@ actor_id spawn_actor(actor_function_ptr_t func, void *args) {
 
   pthread_create(&state->thread, NULL, spawn_actor_fun, si);
 
-  ACCESS_ACTORS_END
+  ACCESS_ACTORS_END;
 
-      return aid;
+  return aid;
 }
 
 
@@ -245,10 +244,10 @@ actor_id _actor_find_by_thread() {
 
 actor_id actor_self() {
   actor_id aid = 0;
-  ACCESS_ACTORS_BEGIN
-      aid = _actor_find_by_thread();
-  ACCESS_ACTORS_END
-      return aid;
+  ACCESS_ACTORS_BEGIN;
+  aid = _actor_find_by_thread();
+  ACCESS_ACTORS_END;
+  return aid;
 }
 
 
@@ -271,17 +270,17 @@ actor_id _actor_trapexit_to() {
 void actor_trap_exit(int action) {
   actor_state_t *st;
 
-  ACCESS_ACTORS_BEGIN
+  ACCESS_ACTORS_BEGIN;
 
-      st = list_filter(
-          actor_list,
-          find_thread,
-          (void *) PTHREAD_HANDLE(pthread_self()));
+  st = list_filter(
+      actor_list,
+      find_thread,
+      (void *) PTHREAD_HANDLE(pthread_self()));
 
-      if (st != NULL) st->trap_exit = action == 0 ? 0 : 1;
+  if (st != NULL) st->trap_exit = action == 0 ? 0 : 1;
 
-  ACCESS_ACTORS_END
-      }
+  ACCESS_ACTORS_END;
+}
 
 void _actor_init_state(actor_state_t **state) {
   actor_state_t *t;
@@ -354,8 +353,8 @@ actor_msg_t *actor_receive_timeout(long timeout) {
 
   memset(&ts, 0, sizeof(struct timespec));
 
-  ACCESS_ACTORS_BEGIN
-      ACTOR_THREAD_PRINT("actor_receive_msg()\n");
+  ACCESS_ACTORS_BEGIN;
+  ACTOR_THREAD_PRINT("actor_receive_msg()\n");
 
   st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(thread));
 
@@ -364,28 +363,27 @@ actor_msg_t *actor_receive_timeout(long timeout) {
 
     pthread_mutex_lock(&st->msg_mutex);
 
-    ACCESS_ACTORS_END
+    ACCESS_ACTORS_END;
 
-        if (msg == NULL) { /* no messages available, let's wait */
-          if (timeout > 0) {
-            gettimeofday(&tp, NULL);
-            ts.tv_sec  = tp.tv_sec;
-            ts.tv_nsec = (tp.tv_usec * 1000) + (timeout * 1000000);
-            if (pthread_cond_timedwait(
-                    &st->msg_cond,
-                    &st->msg_mutex, &ts) == 0) {
-              msg = list_pop((list_item_t**)&st->messages);
-            }
-          } else {
-            pthread_cond_wait(&st->msg_cond, &st->msg_mutex);
-          }
+    if (msg == NULL) { /* no messages available, let's wait */
+      if (timeout > 0) {
+        gettimeofday(&tp, NULL);
+        ts.tv_sec  = tp.tv_sec;
+        ts.tv_nsec = (tp.tv_usec * 1000) + (timeout * 1000000);
+        if (pthread_cond_timedwait(
+                &st->msg_cond,
+                &st->msg_mutex, &ts) == 0) {
           msg = list_pop((list_item_t**)&st->messages);
         }
+      } else {
+        pthread_cond_wait(&st->msg_cond, &st->msg_mutex);
+      }
+      msg = list_pop((list_item_t**)&st->messages);
+    }
     pthread_mutex_unlock(&st->msg_mutex);
   } else {
-    ACCESS_ACTORS_END
-        }
-
+    ACCESS_ACTORS_END;
+  }
 
   return msg;
 }
@@ -401,28 +399,29 @@ void actor_broadcast_msg(long type, void *data, size_t size) {
   int count = 0;
   int x = 0;
 
-  ACCESS_ACTORS_BEGIN
-      count = list_count(actor_list);
+  ACCESS_ACTORS_BEGIN;
+
+  count = list_count(actor_list);
   lst = _amalloc_thread(sizeof(actor_id) * count, pthread_self());
   for (st = (actor_state_t*)*actor_list; st != NULL; st = st->next) {
     lst[x] = st->myid;
     x++;
   }
 
-  ACCESS_ACTORS_END
+  ACCESS_ACTORS_END;
 
-      for (x = 0; x < count; x++) {
-        actor_send_msg(lst[x], type, data, size);
-      }
+  for (x = 0; x < count; x++) {
+    actor_send_msg(lst[x], type, data, size);
+  }
 
   arelease(lst);
 }
 
 void actor_send_msg(actor_id aid, long type, void *data, size_t size) {
-  ACCESS_ACTORS_BEGIN
-      _actor_send_msg(aid, type, data, size);
-  ACCESS_ACTORS_END
-      }
+  ACCESS_ACTORS_BEGIN;
+  _actor_send_msg(aid, type, data, size);
+  ACCESS_ACTORS_END;
+}
 
 void _actor_send_msg(actor_id aid, long type, void *data, size_t size) {
   actor_state_t *st = NULL;
@@ -492,11 +491,11 @@ LIST_FILTER_FUNC(find_actor_block, info, arg) {
 
 void arelease(void *block) {
   pthread_t thread = pthread_self();
-  ACCESS_ACTORS_BEGIN
-      ACTOR_THREAD_PRINT("arelease()");
+  ACCESS_ACTORS_BEGIN;
+  ACTOR_THREAD_PRINT("arelease()");
   _arelease(block, thread);
-  ACCESS_ACTORS_END
-      }
+  ACCESS_ACTORS_END;
+}
 
 void _arelease(void *block, pthread_t thread) {
   alloc_info_t *info = NULL;
