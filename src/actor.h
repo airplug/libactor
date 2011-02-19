@@ -61,7 +61,6 @@ actor_id actor_self();
 /* Memory management */
 void *amalloc(size_t size);
 void arelease(void *block);
-void aretain(void *block);
 
 
 #endif  // SRC_ACTOR_H_

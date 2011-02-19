@@ -481,14 +481,6 @@ void *_amalloc_thread(size_t size, pthread_t thread) {
   return block;
 }
 
-void *amalloc(size_t size) {
-  pthread_t thread = pthread_self();
-  void *block;
-  ACCESS_ACTORS_BEGIN
-      block = _amalloc_thread(size, thread);
-  ACCESS_ACTORS_END
-      return block;
-}
 
 LIST_FILTER_FUNC(find_memory, info, block) {
   if (((alloc_info_t*)info)->block == block) return 0;
@@ -499,32 +491,6 @@ LIST_FILTER_FUNC(find_actor_block, info, arg) {
   return (((struct actor_alloc *) info)->block == arg) ? 0 : -1;
 }
 
-void aretain(void *block) {
-  pthread_t thread = pthread_self();
-  ACCESS_ACTORS_BEGIN
-      _aretain_thread(block, thread);
-  ACCESS_ACTORS_END
-      }
-
-void _aretain_thread(void *block, pthread_t thread) {
-  alloc_info_t *info = NULL;
-  actor_state_t *st = NULL;
-  struct actor_alloc *al;
-
-  if (block == NULL) return;
-
-  if ((info = list_filter(alloc_list, find_memory, block)) != NULL) {
-    info->refcount++;
-  }
-
-  st = list_filter(actor_list, find_thread, (void*)PTHREAD_HANDLE(thread));
-  if (st != NULL) {
-    al = (struct actor_alloc*)malloc(sizeof(struct actor_alloc));
-    assert(al != NULL);
-    al->block = block;
-    list_append(&st->allocs, al);
-  }
-}
 
 void arelease(void *block) {
   pthread_t thread = pthread_self();
